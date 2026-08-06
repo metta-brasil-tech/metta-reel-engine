@@ -243,7 +243,9 @@ if (folha) {
       '-q:v', '6', '-y', saida]));
   const kb = (fs.statSync(saida).size / 1024).toFixed(0);
   console.log(`\ncontact sheet: ${saida} (${arquivos.length} frames, ${kb} KB)`);
-  console.log('  frames a 190px: cerca de 1/3 do custo de contexto de um sheet a 340px');
+  // o custo de uma imagem no contexto é por área, não por byte: 190px em vez de
+  // 340px é cerca de um terço do custo, e o sheet é relido em toda chamada
+  console.log('  190px por frame: cerca de 1/3 do custo de contexto de um sheet a 340px');
 }
 
 console.log(falhas ? `\n${falhas} falha(s), ${avisos} aviso(s)` : `\ntudo certo${avisos ? `, ${avisos} aviso(s)` : ''}`);
