@@ -12,6 +12,25 @@ O motor vive em `.scripts/reel/` do projeto Branding Metta 2.0. Cada vídeo tem 
 
 ---
 
+## 0. ANTES DE COMEÇAR — COMO ABRIR A SESSÃO
+
+**Uma peça, uma sessão.** Se esta conversa já vem tratando de outro assunto, avise o Renan e sugira abrir uma sessão nova antes de começar. Medido na edição do C7182: cada uma das 78 chamadas carregou 611.620 tokens de contexto, dos quais 586.797 já existiam antes de o vídeo entrar em pauta. 96% do que foi relido 78 vezes não tinha a ver com o vídeo, e isso respondeu por US$ 23,80 dos US$ 26,85 da edição (§11 do playbook).
+
+**Não abra frame para conferir o que dá para medir.** Imagem lida cedo é reenviada em toda chamada seguinte: as 3 imagens daquela edição viraram 2,3 milhões de tokens relidos. Use `conferir.js` (etapa 8). Reserve `--folha` para julgamento visual mesmo, tipo enquadramento e expressão.
+
+**Delegue o que é mecânico ao subagent `video-mecanico`** (Haiku, `~/.claude/agents/video-mecanico.md`). O ganho não é o preço do modelo, é o subagent rodar com contexto próprio: as mesmas vinte chamadas mecânicas custam US$ 6,11 daqui e US$ 0,06 de lá.
+
+| Fica com você | Vai para o subagent |
+|---|---|
+| escolher descartes, ordem e ritmo | `preparar.js`, `decupar.js` |
+| revisar o texto da legenda | `montar.js --base`, `verificar.js`, retranscrição |
+| escrever copy de cartela, pílula, número, CTA | `overlays.js`, `sfx.js`, `montar.js --acabamento` |
+| escolher a trilha | `avaliar-musica.js` (mede), `conferir.js` |
+
+Regra de bolso: **se a etapa produz um arquivo a partir de um JSON que já existe, é mecânica.** Se ela escreve o JSON, é sua.
+
+---
+
 ## 1. QUANDO VOCÊ DEVE SER ATIVADO
 
 - "editar vídeo", "cortar clips", "fazer reel desse vídeo", "montar esse bruto"
@@ -130,7 +149,23 @@ Regras que já custaram retrabalho:
 
 ---
 
-## 8. ETAPA 7 — ENTREGAR
+## 8. ETAPA 7 — CONFERIR
+
+```bash
+node .scripts/reel/conferir.js --dir $D
+```
+
+Confere por medição, sem abrir frame: formato, loudness, quadro preto, cada overlay declarado e a posição da legenda. A checagem de overlay amostra os pixels opacos do PNG e compara com a coordenada equivalente no frame, então pega peça que não entrou mesmo quando outra peça amarela está no ar.
+
+Só quando faltar julgamento visual de verdade:
+
+```bash
+node .scripts/reel/conferir.js --dir $D --folha 1.5,12,25,40
+```
+
+---
+
+## 9. ETAPA 8 — ENTREGAR
 
 | Arquivo | Onde |
 |---|---|
@@ -142,10 +177,10 @@ Upload para o Drive em `[Metta]/Video/Publicados/`.
 
 ---
 
-## 9. REGRAS INVIOLÁVEIS
+## 10. REGRAS INVIOLÁVEIS
 
 1. **Plano antes do corte.** Nenhuma decupagem fechada sem aprovação.
-2. **Verificador antes de entregar.** Corte que come palavra passa despercebido em revisão de ouvido.
+2. **Verificador antes de entregar.** Corte que come palavra passa despercebido em revisão de ouvido. E `conferir.js` no final: overlay que não entrou não dá erro, só some.
 3. **Legenda revisada.** O whisper erra termo de marca e põe aspas em nome de botão. Corrigir antes de queimar.
 4. **Safe zone.** Legenda e CTA entre 226px e 1302px. Marca d'água pode sair.
 5. **Fonte.** Zalando Sans Expanded no display, Inter na legenda. Nenhuma outra.
@@ -157,7 +192,7 @@ Upload para o Drive em `[Metta]/Video/Publicados/`.
 
 ---
 
-## 10. PRESETS
+## 11. PRESETS
 
 `.scripts/reel/presets/` guarda a receita de cada formato: estrutura esperada, peças, faixas de zoom e alvos de som calibrados.
 
@@ -167,11 +202,13 @@ Para um formato novo, copie o preset mais próximo e ajuste. Depois de validado 
 
 ---
 
-## 11. FERRAMENTAL
+## 12. FERRAMENTAL
 
 | Peça | Onde |
 |---|---|
 | Motor | `.scripts/reel/` (ver `README.md` de lá) |
 | Playbook | `arquitetura/playbook-reel-vertical.md` |
 | ffmpeg, whisper.cpp, yt-dlp | ver memória `reference-stack-video` |
+| Conferência do entregável | `conferir.js` |
+| Subagent das fases mecânicas | `~/.claude/agents/video-mecanico.md` |
 | Bancada de calibração | `medir-legenda.js`, `calibrar-sfx.js` |

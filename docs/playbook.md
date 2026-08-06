@@ -13,12 +13,12 @@ tags:
   - usado-por/skill-editar-video
 formato_consumo: instrucao
 prioridade_carregamento: alta
-versao: "1.0"
+versao: "1.1"
 sucedido_por: null
 complementar_com: "[[playbook-ad]] · [[ESTILO-EDICAO]] · [[metta-tokens]]"
-summary: "Pipeline medido de edição de reel vertical a partir de bruto de câmera: decupagem por fronteira de palavra, legenda calibrada, escala de plano, efeitos, números de prova e trilha com ducking. Registra as armadilhas que custaram retrabalho e os números já calibrados. Escrito a partir da edição do C7179 (Tiago, mentoria de vendas é golpe), 05/ago/2026."
+summary: "Pipeline medido de edição de reel vertical a partir de bruto de câmera: decupagem por fronteira de palavra, legenda calibrada, escala de plano, efeitos, números de prova e trilha com ducking. Registra as armadilhas que custaram retrabalho, os números já calibrados e o custo de sessão medido. Escrito a partir da edição do C7179 (Tiago, mentoria de vendas é golpe), 05/ago/2026; §11 acrescentada em 06/ago/2026 a partir da medição do C7182."
 created: 2026-08-05
-updated: 2026-08-05
+updated: 2026-08-06
 ---
 
 # Playbook — Reel vertical editado
@@ -195,6 +195,7 @@ Motor em `.scripts/reel/`, compartilhado por todos os vídeos. Ver o `README.md`
 | `sfx.js` | gera os dois sentidos do efeito a partir de um som só (§5) |
 | `montar.js` | corte com escala de plano, overlays, efeitos e trilha (§4 a §7) |
 | `verificar.js` | confere emenda em silêncio e integridade do texto |
+| `conferir.js` | confere o entregável por medição: formato, loudness, overlay, legenda (§11.2) |
 | `calibrar-sfx.js`, `medir-legenda.js` | bancada, rodam uma vez e alimentam este playbook |
 
 A pasta de cada vídeo guarda só configuração e mídia: `decupagem-config.json`, `decupagem.json`, `plano-visual.json`, `estilo-reel.json`, mais `assets/`, `musica/`, `sfx/`.
@@ -208,3 +209,72 @@ Roda sobre `tmp/base.mp4`, **não** sobre o final: no final a música preenche o
 Perder uma palavra isolada é ruído do whisper entre execuções, não corte errado. O que denuncia corte comendo fala é perder palavras **seguidas**, e é assim que o verificador decide entre aviso e falha.
 
 Uma implementação paralela em Python, escrita no mesmo dia para o mesmo vídeo, foi descartada em 05/ago/2026 por decisão do Renan. Os verificadores dela foram reescritos em JS e estão em `verificar.js`.
+
+## §11. Custo de sessão
+
+A edição do C7182 foi medida chamada a chamada (06/ago/2026, telemetria da própria sessão em `~/.claude/projects/.../*.jsonl`). O que ela mostrou muda como abrir a sessão, não como editar.
+
+| Medida | Valor |
+|---|---|
+| chamadas ao modelo | 78, todas Opus 5 |
+| contexto médio por chamada | 611.620 tokens |
+| contexto que já existia quando a edição começou | 586.797 tokens (96%) |
+| contexto novo criado pela edição | 77.676 tokens |
+| desses, 3 imagens de conferência | 59.639 tokens (77% do novo) |
+| output gerado | 81.990 tokens |
+| custo | US$ 26,85 |
+
+Do custo, US$ 23,80 foram leitura de cache, ou seja, **contexto antigo sendo reenviado 78 vezes**. O output, que é o trabalho de fato, foi US$ 2,05: 7,6%.
+
+### §11.1 Uma sessão por peça
+
+**Abra o Claude Code numa sessão nova para cada vídeo.** É a medida de maior efeito, e é gratuita.
+
+A conta é direta: se o contexto que a edição usa é 77.676 tokens, mas cada chamada carrega 611.620, então 87% do que se paga em toda chamada é assunto de outra conversa. A mesma edição numa sessão limpa fica na casa de US$ 8, estimado a partir do contexto novo medido.
+
+Corolários:
+- não abra a sessão de edição no meio de uma conversa longa sobre outro assunto;
+- terminada a peça, feche e abra de novo para a próxima;
+- se a sessão precisar continuar por outro motivo, saiba que o custo por peça cresce com o que veio antes, não com a dificuldade do vídeo.
+
+### §11.2 Conferir por medição, não por olhar
+
+Frame é o item mais caro do pipeline: uma imagem lida cedo é reenviada em toda chamada seguinte. As 3 imagens da edição do C7182 geraram 2,3 milhões de tokens de cache lido ao longo de 69 chamadas.
+
+Por isso `conferir.js`. Ele responde em texto o que antes exigia abrir frame:
+
+| Checagem | Como mede |
+|---|---|
+| formato | ffprobe: 1080x1920, yuv420p, 48kHz estéreo, duração |
+| loudness | loudnorm: integrado entre −17 e −13 LUFS, pico até −1 dBTP |
+| quadro preto | média de luminância em 12 amostras |
+| cada overlay entrou | amostra os pixels opacos do PNG e confere se aquela cor está naquela coordenada do frame |
+| legenda | renderiza o `.ass` sobre preto e mede centro, caixa de texto, margem e safe zone |
+
+A checagem de overlay é por pixel do próprio PNG, não por cor de marca: procurar amarelo na tela dá falso positivo, porque quase toda peça é amarela e uma cobre a falta da outra. Medido nas duas peças: presente rende 95 a 100% de acerto, ausente rende 3 a 6%. O limiar está em 55%.
+
+Sobrou julgamento visual de verdade (composição, expressão, enquadramento)? `--folha 1.5,12,25,40` monta um contact sheet a 190px por frame, cerca de um terço do custo de contexto de um sheet a 340px.
+
+### §11.3 Quais fases precisam de Opus
+
+O ganho de delegar não vem de o modelo ser mais barato. Vem de o subagent rodar com **contexto próprio**: vinte chamadas mecânicas custam US$ 6,11 arrastando 611k de histórico e US$ 0,06 num subagent com 30k. Trocar o modelo, sozinho, economizaria US$ 1,64 dos US$ 26,85.
+
+| Fase | Natureza | Onde roda |
+|---|---|---|
+| probe e transcrição (`preparar.js`) | rodar e ler número | subagent `video-mecanico` |
+| escolher descartes e ordem | editorial | sessão principal |
+| `decupar.js` | aplica o que já foi decidido | subagent |
+| **aprovação da decupagem** | **curadoria do Renan** | — |
+| `montar.js --base` e `verificar.js` | mecânico; falha volta para a sessão | subagent |
+| retranscrever a base | mecânico | subagent |
+| revisar o texto da legenda | editorial | sessão principal |
+| copy de cartela, pílula, número, CTA | editorial | sessão principal |
+| `overlays.js`, `sfx.js` | renderiza o que foi decidido | subagent |
+| escolher trilha | editorial, com o número de `avaliar-musica.js` | sessão principal decide, subagent mede |
+| `montar.js --acabamento` | mecânico | subagent |
+| `conferir.js` | mecânico | subagent |
+| **julgamento da peça pronta** | **Renan** | — |
+
+O subagent está em `~/.claude/agents/video-mecanico.md`, modelo Haiku, com a lista de comandos permitidos e a proibição explícita de decidir corte, escrever copy ou mexer em número calibrado.
+
+Regra de bolso: **se a etapa produz um arquivo a partir de um JSON que já existe, é mecânica.** Se ela escreve o JSON, é editorial.

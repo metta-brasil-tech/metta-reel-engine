@@ -11,6 +11,12 @@ Também funciona sozinho, chamando os scripts na mão.
 Duas peças foram produzidas com ele. A segunda levou **21 minutos** de ponta a
 ponta, dos quais 8 foram só transcrição.
 
+> **Abra uma sessão nova do Claude Code para cada peça.** É a medida de maior
+> efeito no custo e não custa nada. Medido na segunda peça: cada uma das 78
+> chamadas ao modelo carregou 611.620 tokens de contexto, dos quais 586.797 já
+> existiam antes de o vídeo entrar em pauta. 96% do que foi relido 78 vezes não
+> tinha relação com o vídeo. A conta inteira está em §11 do `docs/playbook.md`.
+
 ---
 
 ## O que você precisa instalar
@@ -116,8 +122,29 @@ node engine/legendar.js --dir $D
 node engine/overlays.js --dir $D
 node engine/sfx.js --dir $D --fonte $D/sfx/origem.wav
 node engine/montar.js --dir $D --acabamento --out $D/final.mp4
-node engine/verificar.js --dir $D
 ```
+
+### 6. Conferir
+
+```bash
+node engine/conferir.js --dir $D
+```
+
+Confere o entregável por medição, sem abrir frame: formato, loudness, quadro
+preto, cada overlay declarado e a posição da legenda. A checagem de overlay
+amostra os pixels opacos do PNG e compara com a coordenada equivalente no vídeo,
+então pega peça que não entrou mesmo quando outra peça amarela está no ar
+(medido: presente rende 95 a 100% de acerto, ausente rende 3 a 6%).
+
+Quando faltar julgamento visual mesmo, tipo enquadramento e expressão:
+
+```bash
+node engine/conferir.js --dir $D --folha 1.5,12,25,40
+```
+
+Monta um contact sheet a 190px por frame. Editando dentro do Claude, frame é o
+item mais caro do pipeline: uma imagem lida cedo é reenviada em toda chamada
+seguinte, e três delas viraram 2,3 milhões de tokens numa peça só.
 
 ---
 
@@ -146,6 +173,31 @@ de PNG precisa de `-loop 1`.
 - `docs/skill-editar-video.md` — a skill do Claude Code que orquestra o fluxo
 - `docs/dna-edicao.md` — o padrão visual medido em peças de referência
 - `docs/trilhas.md` — o critério para escolher trilha e as faixas já medidas
+
+---
+
+## Rodando dentro do Claude Code
+
+Dois arquivos entram na sua instalação do Claude, não no projeto:
+
+```bash
+cp docs/skill-editar-video.md ~/.claude/commands/editar-video.md
+cp agents/video-mecanico.md   ~/.claude/agents/video-mecanico.md
+```
+
+A skill vira o comando `/editar-video` e orquestra o fluxo. O subagent
+`video-mecanico` (Haiku) roda as fases mecânicas com contexto próprio, que é de
+onde vem a economia: as mesmas vinte chamadas custam US$ 6,11 arrastando o
+histórico da sessão e US$ 0,06 num subagent limpo. Trocar o modelo, sozinho,
+economizaria bem menos.
+
+A divisão é simples: **se a etapa produz um arquivo a partir de um JSON que já
+existe, é mecânica e vai para o subagent.** Se ela escreve o JSON (o que cortar,
+o que a legenda diz, qual trilha), é editorial e fica na sessão principal. A
+tabela completa está em §11.3 do playbook.
+
+A skill traz regras de marca da Metta. Adapte o §10 ("regras invioláveis") para
+a sua operação; o resto do fluxo é agnóstico.
 
 ---
 
