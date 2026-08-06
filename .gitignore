@@ -1,0 +1,33 @@
+# mídia: nunca vai para o repositório
+*.mp4
+*.MP4
+*.mov
+*.mp3
+*.wav
+*.m4a
+*.aac
+
+# material de trabalho de cada peça
+video/
+work/
+trilhas/
+*/tmp/
+*/partes/
+*/partes-final/
+*/overlays/
+*/planos/
+
+# transcrições e intermediários
+*_tr.json
+util_palavras.json
+base_tr.json
+*.ass
+*.raw
+
+# node
+node_modules/
+# package-lock.json fica versionado: garante as mesmas versões na máquina de quem clonar
+
+# sistema
+Thumbs.db
+.DS_Store

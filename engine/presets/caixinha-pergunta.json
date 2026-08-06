@@ -1,0 +1,63 @@
+{
+  "nome": "Caixinha de pergunta",
+  "descricao": "Reel de resposta a caixinha do Instagram: ele olha para cima lendo a pergunta, responde com testes práticos e fecha com prova numérica e CTA. Validado no C7179 (Tiago, mentoria de vendas é golpe), 05/ago/2026.",
+  "marca": "Metta",
+
+  "estrutura_esperada": [
+    "gancho: a pergunta, repetida em voz alta",
+    "virada: a resposta curta que reposiciona a pergunta",
+    "setup: anuncia o que vem",
+    "perguntas ou passos numerados",
+    "fecho do argumento",
+    "prova numérica",
+    "garantia",
+    "carimbo",
+    "CTA"
+  ],
+
+  "papeis": [
+    { "chave": "", "papel": "gancho", "_": "preencher com o início da primeira frase" }
+  ],
+
+  "pecas_modelo": [
+    { "nome": "caixa-pergunta", "tipo": "imagem", "arquivo": "cx-pergunta.png", "largura": 640,
+      "_": "print da caixinha, em assets/. Entra no primeiro frame, sem fade" },
+    { "nome": "cartela-abertura", "tipo": "cartela", "texto": "<a pergunta>" },
+    { "nome": "pilula-1", "tipo": "pilula", "texto": "Pergunta 1" },
+    { "nome": "pilula-2", "tipo": "pilula", "texto": "Pergunta 2" },
+    { "nome": "pilula-3", "tipo": "pilula", "texto": "Pergunta 3" },
+    { "nome": "numero-1", "tipo": "numero", "numero": "<numeral>", "complemento": "<o que é>" },
+    { "nome": "pilula-cta", "tipo": "cta", "texto": "Clique em saiba mais" }
+  ],
+
+  "zoom_padrao": {
+    "_regra": "alternar aberto e fechado a cada corte; nunca repetir a escala em segmentos vizinhos; fechar mais nos carimbos",
+    "aberto": [1.0, 1.06],
+    "medio": [1.12, 1.22],
+    "fechado": [1.26, 1.34]
+  },
+
+  "sfx_padrao": {
+    "delta_minimo": 0.21,
+    "volume": 0.7,
+    "arquivo_in": "zoom-in.wav",
+    "arquivo_out": "zoom-out.wav",
+    "_antecipacao": "medir o pico de cada arquivo com sfx.js e usar esse valor"
+  },
+
+  "musica_padrao": {
+    "volume": 0.14,
+    "fade_in": 0.6,
+    "fade_out": 2.0,
+    "ducking": { "threshold": 0.035, "ratio": 8, "attack": 20, "release": 350 },
+    "_alvo": "cama de -13 a -18 dB sob a voz"
+  },
+
+  "regras": [
+    "número de prova entra sobre a imagem, sincronizado com a palavra falada, nunca em tela cheia",
+    "suprimir a legenda na janela de cada número e da cartela de abertura",
+    "CTA embaixo da legenda, apontando para baixo, visível até o último frame",
+    "dado na tela só de fonte canônica do Banco de Provas",
+    "seis a sete destaques amarelos no máximo"
+  ]
+}

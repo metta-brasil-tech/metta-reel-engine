@@ -1,0 +1,76 @@
+{
+  "_fonte": "design/metta-tokens.md (normativo) + video/ESTILO-EDICAO.md (DNA medido das peças PP-SE-1038 e PP-SE-1046)",
+  "canvas": {
+    "w": 1080,
+    "h": 1920,
+    "fps": "30000/1001"
+  },
+  "cores": {
+    "amarelo": {
+      "hex": "#FFBE18",
+      "token": "yellow-50",
+      "uso": "palavra-chave, pílula, cartela de abertura, CTA"
+    },
+    "amarelo-hover": {
+      "hex": "#FFC531",
+      "token": "yellow-60",
+      "uso": "variação de bloco"
+    },
+    "charcoal": {
+      "hex": "#0C161B",
+      "token": "night/charcoal",
+      "uso": "texto sobre amarelo, pílula escura, contorno de legenda"
+    },
+    "charcoal-soft": {
+      "hex": "#1F2022",
+      "uso": "fundo escuro alternativo"
+    },
+    "branco": {
+      "hex": "#FFFFFF",
+      "token": "night-100",
+      "uso": "legenda corrida"
+    },
+    "cinza-claro": {
+      "hex": "#EFF3F5",
+      "token": "night-95",
+      "uso": "fundo claro de card"
+    },
+    "cinza-corpo": {
+      "hex": "#C8C8CB",
+      "token": "night-70",
+      "uso": "texto secundário sobre escuro"
+    }
+  },
+  "tipografia": {
+    "display": {
+      "familia": "Zalando Sans Expanded",
+      "arquivos": "Documents/Claude/Projects/design/system-source/fonts/",
+      "uso": "cartela de abertura, pílula de palavra-chave, número de pergunta, CTA"
+    },
+    "corpo": {
+      "familia": "Inter",
+      "arquivos": "video/assets/fonts/Inter-Bold.ttf, Inter-ExtraBold.ttf",
+      "familia_interna_libass": "Inter Legenda",
+      "uso": "legenda corrida (libass não instancia eixo variável, por isso os estáticos)"
+    }
+  },
+  "legenda": {
+    "cor": "#FFFFFF",
+    "contorno": "sombra escura suave, não contorno duro",
+    "alinhamento": "centralizado na horizontal",
+    "y_centro_pct": 60,
+    "y_centro_px": 1152,
+    "_ajuste": "o DNA media 54% (1037px), mas nos planos fechados a legenda caía no queixo. 60% desce para o peito e ainda deixa a faixa 1207 a 1292 livre para o CTA, dentro da safe zone que termina em 1302px.",
+    "altura_maiuscula_px": "41 a 46",
+    "corpo_equivalente_px": 86,
+    "fatiamento": "2 a 5 palavras, uma linha",
+    "quebra": "fronteira natural de fala, respeitando vírgula",
+    "karaoke": false,
+    "_nota": "no DNA medido a legenda é toda branca; o amarelo aparece como pílula separada, não como palavra colorida dentro da legenda"
+  },
+  "safe_zone_reels": {
+    "top_px": 226,
+    "bottom_px": 618,
+    "_nota": "legenda e CTA dentro da faixa segura; marca d'água e barra de progresso podem sair"
+  }
+}
