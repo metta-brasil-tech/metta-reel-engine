@@ -31,3 +31,16 @@ node_modules/
 # sistema
 Thumbs.db
 .DS_Store
+
+# credenciais: cada um aponta as suas localmente
+google-service-account.json
+.env
+*.pem
+*credentials*.json
+
+# folhas de contato e frames de conferência (regeneráveis)
+*.jpg
+*.jpeg
+*/folhas/
+*/curadoria/
+*/qa/

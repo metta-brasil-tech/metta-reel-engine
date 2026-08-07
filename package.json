@@ -1,14 +1,16 @@
 {
   "name": "metta-reel-engine",
-  "version": "1.0.0",
-  "description": "Motor de edição de reel vertical a partir de bruto de câmera: decupagem por fala, legenda calibrada, escala de plano, grafismo, efeito e trilha",
+  "version": "1.1.0",
+  "description": "Motor de edição de vídeo vertical da Metta: reel falado, cortado pela fala, e institucional de B-roll, cortado na batida da trilha",
   "private": true,
   "scripts": {
+    "checar": "node scripts/checar-ambiente.js",
     "trilhas": "node scripts/baixar-trilhas.js"
   },
   "dependencies": {
     "ffmpeg-static": "^5.2.0",
     "ffprobe-static": "^3.1.0",
+    "googleapis": "^144.0.0",
     "puppeteer": "^24.0.0"
   },
   "engines": { "node": ">=18" }

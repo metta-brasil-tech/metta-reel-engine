@@ -1,15 +1,42 @@
-# Motor de reel
+# Motor de vídeo Metta
 
-Edição de reel vertical a partir de bruto de câmera. Entra um arquivo de câmera,
-sai um reel 1080x1920 com decupagem de fala, legenda, escala de plano, grafismo,
-efeito de zoom e trilha, conferido por medição.
+Dois pipelines de edição vertical 9:16, por linha de comando. Nenhum dos dois abre
+editor gráfico: tudo roda em ffmpeg e o resultado é conferido por medição.
+
+| Pipeline | Entra | Sai | O corte se ancora em |
+|---|---|---|---|
+| **Reel** (`engine/`) | bruto de câmera com fala | reel com legenda, grafismo, efeito e trilha | a fala, transcrita palavra a palavra |
+| **Institucional** (`engine/institucional/`) | vários clipes de B-roll | montagem com música, sem locução | a batida da trilha |
+
+São separados porque o problema é diferente. No reel, a transcrição diz onde a frase
+começa e termina, e a decupagem nasce daí. No institucional não há fala nenhuma para
+ancorar nada, então quem manda no ponto de emenda é a grade rítmica da música, e o
+material é escolhido por olho, registrado num catálogo de janelas.
+
+O pipeline institucional está documentado em **[docs/institucional.md](docs/institucional.md)**.
+O resto deste README trata do reel.
 
 Feito para rodar dentro do **Claude Code**: os scripts fazem o trabalho pesado e
 determinístico, e o Claude faz a leitura do material e as decisões editoriais.
 Também funciona sozinho, chamando os scripts na mão.
 
-Duas peças foram produzidas com ele. A segunda levou **21 minutos** de ponta a
-ponta, dos quais 8 foram só transcrição.
+Duas peças de reel foram produzidas com ele. A segunda levou **21 minutos** de ponta a
+ponta, dos quais 8 foram só transcrição. No institucional, três peças de 55s saíram de
+76 clipes de reunião, com a curadoria feita em lote sobre folhas de contato.
+
+## Antes de tudo
+
+```bash
+npm install
+node scripts/checar-ambiente.js
+```
+
+O verificador testa Node, ffmpeg, os filtros específicos que o motor usa, as fontes e o
+whisper, e diz exatamente o que fazer com cada coisa que faltar.
+
+---
+
+# Motor de reel
 
 > **Abra uma sessão nova do Claude Code para cada peça.** É a medida de maior
 > efeito no custo e não custa nada. Medido na segunda peça: cada uma das 78

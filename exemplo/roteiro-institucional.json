@@ -1,0 +1,182 @@
+{
+  "_nota": "Peca 1 limpa. Sem cartela, sem assinatura e sem trilha: o corte segue a grade de 140 BPM exatos da NOW OR NEVER, pra casar quando a musica entrar no editor do Instagram.",
+  "saida": "metta-institucional-01-limpo.mp4",
+  "source": "source",
+  "grade": "grade-140.json",
+  "bloquear": [
+    "C6887"
+  ],
+  "blocos": [
+    {
+      "nome": "respiro",
+      "_papel": "um plano aberto segurando o silencio da intro, com a cartela entrando por cima",
+      "batidas": 4,
+      "planos": 1,
+      "filtro": {
+        "plano": [
+          "conjunto",
+          "medio"
+        ],
+        "energia": [
+          "conversa",
+          "escuta"
+        ]
+      },
+      "alternativo": {
+        "plano": [
+          "conjunto",
+          "medio"
+        ]
+      }
+    },
+    {
+      "nome": "rajada-conjunto",
+      "_papel": "o drop cai aqui, comeca a escada de escala de plano igual a abertura da referencia",
+      "batidas": 2,
+      "planos": 1,
+      "filtro": {
+        "plano": "conjunto"
+      },
+      "alternativo": {
+        "plano": [
+          "conjunto",
+          "medio"
+        ]
+      }
+    },
+    {
+      "nome": "rajada-medio",
+      "batidas": 2,
+      "planos": 1,
+      "filtro": {
+        "plano": "medio"
+      }
+    },
+    {
+      "nome": "rajada-close",
+      "batidas": 2,
+      "planos": 1,
+      "filtro": {
+        "plano": "close"
+      },
+      "alternativo": {
+        "plano": [
+          "close",
+          "medio"
+        ]
+      }
+    },
+    {
+      "nome": "rajada-fechado",
+      "batidas": 2,
+      "planos": 1,
+      "filtro": {
+        "plano": "primeirissimo"
+      },
+      "alternativo": {
+        "plano": [
+          "primeirissimo",
+          "close"
+        ]
+      }
+    },
+    {
+      "nome": "time",
+      "_papel": "corpo principal, um plano por compasso, alternando quem fala e quem escuta",
+      "batidas": 4,
+      "planos": 10,
+      "filtro": {
+        "energia": [
+          "escuta",
+          "gesto",
+          "conversa",
+          "concentracao"
+        ]
+      },
+      "alternativo": {}
+    },
+    {
+      "nome": "riso",
+      "_papel": "pico humano, cortes na metade do compasso",
+      "batidas": 2,
+      "planos": 4,
+      "filtro": {
+        "energia": "riso"
+      },
+      "alternativo": {
+        "energia": [
+          "riso",
+          "conversa"
+        ]
+      }
+    },
+    {
+      "nome": "especialista",
+      "_papel": "o Tiago entra como autoridade, planos mais longos",
+      "batidas": 4,
+      "planos": 5,
+      "filtro": {
+        "especialista": [
+          "sim",
+          "provavel"
+        ]
+      },
+      "alternativo": {
+        "energia": [
+          "gesto",
+          "conversa"
+        ]
+      }
+    },
+    {
+      "nome": "coletivo",
+      "_papel": "volta pro time, ritmo levemente mais rapido que o corpo",
+      "batidas": 3,
+      "planos": 8,
+      "filtro": {
+        "energia": [
+          "gesto",
+          "conversa",
+          "riso"
+        ]
+      },
+      "alternativo": {}
+    },
+    {
+      "nome": "rajada-final",
+      "_papel": "montagem acelerada, um plano por batida",
+      "batidas": 1,
+      "planos": 8,
+      "zoom": 1.12,
+      "filtro": {
+        "uso": [
+          "hero",
+          "apoio"
+        ]
+      },
+      "alternativo": {}
+    },
+    {
+      "nome": "fecho",
+      "_papel": "respira de novo, dois planos longos sob a cartela de fechamento",
+      "batidas": 8,
+      "planos": 2,
+      "filtro": {
+        "energia": [
+          "riso",
+          "conversa"
+        ],
+        "plano": [
+          "medio",
+          "conjunto"
+        ]
+      },
+      "alternativo": {
+        "energia": [
+          "riso",
+          "conversa"
+        ]
+      }
+    }
+  ]
+}
