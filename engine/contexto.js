@@ -12,9 +12,9 @@ const path = require('path');
 const fs = require('fs');
 
 const RAIZ = __dirname;
-const PROJETO = path.resolve(RAIZ, '..');
+const PROJETO = path.resolve(RAIZ, '..', '..');
 
-const vt = require(path.join(RAIZ, 'video-tools.js'));
+const vt = require(path.join(PROJETO, '.scripts', 'video-tools.js'));
 
 function resolverDir(argv = process.argv) {
   const i = argv.indexOf('--dir');

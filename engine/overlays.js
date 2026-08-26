@@ -18,7 +18,7 @@ try {
   puppeteer = require('puppeteer');
 } catch (e) {
   console.error('falta o puppeteer, que é quem renderiza as peças gráficas.');
-  console.error('rode "npm install" na raiz do repositório e tente de novo.');
+  console.error('rode "npm install" na raiz do projeto e tente de novo.');
   process.exit(1);
 }
 
@@ -191,12 +191,57 @@ function cta(texto, topo = 1207) {
  *   cta      texto, topo
  *   imagem   arquivo (em assets/), largura, centro_y
  */
+/**
+ * Citação em tela cheia: a frase que o vídeo está citando, grande, entre aspas.
+ *
+ * Serve para carimbar a fala de terceiro que a peça vai contestar ("os gurus
+ * falam: saia do operacional"). Entra em duas partes para acompanhar a fala:
+ * a primeira palavra bate junto com ela, o resto entra logo depois, e cada
+ * entrada leva um clique no som.
+ *
+ * `parte` diz o que renderizar: "1" só o começo, "2" a frase inteira. Como o
+ * segundo PNG contém o primeiro, basta trocar um pelo outro na linha do tempo.
+ */
+function citacao(inicio, resto, parte, topoPct = 0.06) {
+  const cinza = 'rgba(255,255,255,0.35)';
+  const visivel = parte === 2;
+  return `
+  <div class="camada" style="display:flex; flex-direction:column; justify-content:flex-start;
+              align-items:center; padding:${Math.round(H * topoPct)}px 90px 0;">
+    <div style="font-family:'ZalandoBlack'; font-size:82px; line-height:1.04; color:${C.branco};
+                text-align:center; letter-spacing:-0.02em; text-transform:uppercase;
+                text-shadow:0 6px 34px rgba(0,0,0,0.75);">
+      <span style="color:${cinza};">&ldquo;</span>${inicio}${
+        visivel ? ` ${resto}<span style="color:${cinza};">&rdquo;</span>` : ''
+      }
+    </div>
+  </div>`;
+}
+
+/**
+ * Passo numerado: o numeral grande em amarelo e o rótulo embaixo, para marcar
+ * enumeração falada ("o segundo passo é...").
+ */
+function passo(numero, texto, topoPct = 0.05) {
+  return `
+  <div class="camada" style="display:flex; flex-direction:column; justify-content:flex-start;
+              align-items:center; padding:${Math.round(H * topoPct)}px 90px 0; gap:10px;">
+    <div style="font-family:'ZalandoBlack'; font-size:104px; line-height:0.9; color:${C.amarelo};
+                letter-spacing:-0.04em; text-shadow:0 6px 30px rgba(0,0,0,0.6);">${numero}</div>
+    <div style="font-family:'ZalandoBlack'; font-size:62px; line-height:1.06; color:${C.branco};
+                text-align:center; text-transform:uppercase; letter-spacing:-0.015em;
+                text-shadow:0 5px 28px rgba(0,0,0,0.7);">${texto}</div>
+  </div>`;
+}
+
 const CONSTRUTORES = {
   cartela: p => cartela(p.texto),
   pilula: p => pilula(p.texto, p.topo_pct),
   numero: p => numeroDestaque(p.numero, p.complemento, p.topo),
   cta: p => cta(p.texto, p.topo),
-  imagem: p => caixaPergunta(p.largura, p.centro_y, p.arquivo)
+  imagem: p => caixaPergunta(p.largura, p.centro_y, p.arquivo),
+  citacao: p => citacao(p.inicio, p.resto, p.parte || 1, p.topo_pct),
+  passo: p => passo(p.numero, p.texto, p.topo_pct)
 };
 
 const visual = ctx.lerJson('plano-visual.json');

@@ -4,6 +4,8 @@
 *.mov
 *.mp3
 *.wav
+# ...menos o acervo de efeito do proprio motor, que e parte do sistema
+!engine/assets/sfx/*.wav
 *.m4a
 *.aac
 

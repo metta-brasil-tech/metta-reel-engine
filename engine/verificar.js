@@ -107,7 +107,14 @@ function checarPalavras(wav) {
 
   const j = JSON.parse(fs.readFileSync(saidaTr + '.json', 'utf8'));
   const obtido = normalizar((j.transcription || []).map(s => s.text).join(' '));
-  const esperado = normalizar(plano.segmentos.map(s => s.texto).join(' '));
+  // Quando o aperto de silencio parte uma frase em varios pedacos, todos os
+  // pedacos herdam o texto inteiro dela. Somar isso conta a mesma frase varias
+  // vezes: no depoimento-01, que o whisper pontuou como uma frase so, o esperado
+  // saia com 1.760 palavras para uma peca de 220. Texto repetido em segmentos
+  // vizinhos entra uma vez.
+  const textos = [];
+  plano.segmentos.forEach(s => { if (s.texto !== textos[textos.length - 1]) textos.push(s.texto); });
+  const esperado = normalizar(textos.join(' '));
 
   const pEsperado = esperado.split(' ').filter(Boolean);
   const pObtido = new Set(obtido.split(' ').filter(Boolean));

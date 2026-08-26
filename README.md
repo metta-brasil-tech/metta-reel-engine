@@ -1,19 +1,25 @@
 # Motor de vídeo Metta
 
-Dois pipelines de edição vertical 9:16, por linha de comando. Nenhum dos dois abre
+Três pipelines de edição vertical 9:16, por linha de comando. Nenhum deles abre
 editor gráfico: tudo roda em ffmpeg e o resultado é conferido por medição.
 
 | Pipeline | Entra | Sai | O corte se ancora em |
 |---|---|---|---|
 | **Reel** (`engine/`) | bruto de câmera com fala | reel com legenda, grafismo, efeito e trilha | a fala, transcrita palavra a palavra |
 | **Institucional** (`engine/institucional/`) | vários clipes de B-roll | montagem com música, sem locução | a batida da trilha |
+| **Criativos** (`engine/criativos/`) | bruto de anúncio, um por peça | anúncio vertical com legenda, pílula de CTA e cor | a fala, com a decupagem revisada por ouvido |
+
+O pipeline de criativos é o de reel embalado em um comando só, para produzir lote.
+Está documentado em **[docs/criativos.md](docs/criativos.md)**, junto com o DNA de
+edição medido nas peças do editor da casa e a lista de armadilhas que a produção
+de 10 anúncios revelou.
 
 São separados porque o problema é diferente. No reel, a transcrição diz onde a frase
 começa e termina, e a decupagem nasce daí. No institucional não há fala nenhuma para
 ancorar nada, então quem manda no ponto de emenda é a grade rítmica da música, e o
 material é escolhido por olho, registrado num catálogo de janelas.
 
-O pipeline institucional está documentado em **[docs/institucional.md](docs/institucional.md)**.
+Institucional em **[docs/institucional.md](docs/institucional.md)**, criativos em **[docs/criativos.md](docs/criativos.md)**.
 O resto deste README trata do reel.
 
 Feito para rodar dentro do **Claude Code**: os scripts fazem o trabalho pesado e

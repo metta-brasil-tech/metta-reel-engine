@@ -44,10 +44,23 @@ const FONTE = cfg.fonte || null;
 // BORDA_DB decide onde a fala realmente acaba, e precisa ser bem mais baixo:
 // ele fecha "suando frio" quase sussurrado, a -40 dB, e com limiar único
 // a palavra "frio" era classificada como silêncio e cortada fora.
-const SILENCIO_DB = -38;
-const BORDA_DB = -50;
-const PAUSA_MINIMA_CORTE = 0.45;   // abaixo disso é respiração, fica
-const PAUSA_ALVO = 0.20;           // o que sobra da pausa depois do aperto
+//
+// Os quatro números abaixo são do C7179, gravado com lapela, onde a pausa cai a
+// -60 dB e a fala vive em -20. Material de celular em sala não tem essa folga:
+// nos depoimentos de agosto/2026 o piso de ruído ficou em -42,5 dB (p05) e
+// nenhuma janela do vídeo inteiro chegou a -50, então o aperto não encontrava
+// pausa nenhuma e a peça saía num segmento único, sem ritmo e sem escala de
+// plano. Por isso o bloco "limiares" do decupagem-config.json manda quando
+// existe: é uma propriedade da gravação, não do método.
+const LIM = cfg.limiares || {};
+const SILENCIO_DB = LIM.silencio_db !== undefined ? LIM.silencio_db : -38;
+const BORDA_DB = LIM.borda_db !== undefined ? LIM.borda_db : -50;
+const PAUSA_MINIMA_CORTE = LIM.pausa_minima_s !== undefined ? LIM.pausa_minima_s : 0.45;
+const PAUSA_ALVO = LIM.pausa_alvo_s !== undefined ? LIM.pausa_alvo_s : 0.20;
+if (Object.keys(LIM).length) {
+  console.log("[decupagem] limiares da peça: silêncio " + SILENCIO_DB + " dB, borda " + BORDA_DB
+    + " dB, pausa mínima " + PAUSA_MINIMA_CORTE + "s, alvo " + PAUSA_ALVO + "s");
+}
 
 function mapaDeEnergia(wavPath, offset, janelaMs = 20) {
   const buf = fs.readFileSync(wavPath);
@@ -205,9 +218,15 @@ const segmentos = mantidas.map((f, i) => {
   }
 
   const casado = PAPEIS.find(p => f.texto.toLowerCase().startsWith(p.chave));
+  // A margem do primeiro segmento pode empurrar o inicio para antes de zero
+  // quando o bruto ja abre na fala, como nos depoimentos gravados no celular.
+  // Um -ss negativo nao vira zero de forma igual nos dois fluxos: a imagem
+  // comeca em 0 e dura o pedido, o audio conta a partir do valor negativo e
+  // sai mais curto. No depoimento-01 isso foi 59 ms de dessincronia numa parte
+  // so. Zero e o piso.
   return {
     id: i + 1,
-    de: +(ini - MARGEM_ANTES).toFixed(3),
+    de: Math.max(0, +(ini - MARGEM_ANTES).toFixed(3)),
     ate: +(fim + MARGEM_DEPOIS).toFixed(3),
     texto: f.texto,
     papel: casado ? casado.papel : 'corpo'
@@ -304,6 +323,24 @@ const plano = {
   segmentos,
   descartes
 };
+
+// Ajuste manual de borda, em tempo de bruto, aplicado por último: a transcrição
+// às vezes perde a última palavra de uma frase, e no C7235 ela ouviu até "venha
+// fazer" sem registrar "parte", então o corte caía em cima de palavra falada.
+// Precisa vir depois do aperto de silêncios, senão o aperto desfaz o ajuste.
+//   "ajustes_de_borda": [{ "id": 4, "ate": 76.15, "motivo": "..." }]
+// O id aceita "ultimo" e "primeiro": id numérico muda toda vez que um descarte
+// entra ou sai, e um ajuste que apontava para o fecho passa a mexer no meio da
+// peça sem avisar. Foi o que aconteceu no C7239 ao recuperar a premissa da conta.
+(cfg.ajustes_de_borda || []).forEach(a => {
+  const s = a.id === 'ultimo' ? segmentos[segmentos.length - 1]
+          : a.id === 'primeiro' ? segmentos[0]
+          : segmentos.find(x => x.id === a.id);
+  if (!s) { console.warn(`  aviso: ajuste de borda aponta para o segmento ${a.id}, que não existe`); return; }
+  if (a.de !== undefined) s.de = a.de;
+  if (a.ate !== undefined) s.ate = a.ate;
+  console.log(`[decupagem] borda do segmento ${a.id} ajustada à mão para ${s.de.toFixed(2)}-${s.ate.toFixed(2)}`);
+});
 
 if (!FONTE) console.warn('  aviso: decupagem-config.json sem "fonte"; a montagem vai precisar dela');
 ctx.gravarJson('decupagem.json', plano);

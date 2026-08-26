@@ -15,6 +15,22 @@ const path = require('path');
 const ctx = require('./contexto').abrir();
 const estilo = ctx.lerJson('estilo-reel.json');
 
+// Destaque e correção são do vídeo, não do motor: cada peça tem as suas palavras
+// de tese e os seus erros de transcrição. Ficam em plano-visual.json, bloco
+// "legenda". Sem o bloco, valem os defaults abaixo, que vieram do C7182.
+const visual = ctx.lerJson('plano-visual.json', false) || {};
+const cfgLegenda = visual.legenda || {};
+
+// Duracao da base, para nao deixar bloco comecando depois do ultimo quadro.
+let DURACAO = 0;
+try {
+  const base = path.join(ctx.dir, 'tmp', 'base.mp4');
+  if (fs.existsSync(base)) {
+    DURACAO = parseFloat(require('child_process').execFileSync(ctx.vt.FFPROBE || 'ffprobe',
+      ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', base]).toString().trim());
+  }
+} catch (e) { DURACAO = 0; }
+
 const W = estilo.canvas.w;
 const H = estilo.canvas.h;
 const Y = estilo.legenda.y_centro_px;      // 1037
@@ -32,7 +48,7 @@ const AMARELO = hexParaAss(estilo.cores.amarelo.hex);
 // repetido. Ficaram só as que carregam a tese (a objeção, a garantia, a prova).
 // "mil" e "empresas" saíram porque o card de prova já mostra o mesmo número,
 // e "devolvemos" saiu porque "devolve" já apareceu na pergunta.
-const CHAVES = [
+const CHAVES = cfgLegenda.chaves || [
   'golpe', 'golpe?', 'golpista',
   'garante',
   'devolve',
@@ -48,27 +64,39 @@ const PAUSA_QUEBRA = 0.35;
 
 // Correções de transcrição. O whisper erra nomes e expressões da marca, e o
 // /legendar exige revisão antes de queimar. Aplicadas sobre a palavra já montada.
-const CORRECOES = [
-  [/^sabe$/i, 'Saiba'],
-  [/^saiba$/i, 'Saiba'],
-  [/^antigolpe$/i, 'Antigolpe'],
-  [/^metta$/i, 'Metta'],
-  [/^mentoria$/i, 'Mentoria']
-];
+// Substituem as padrão em vez de somar: a correção de um vídeo estraga o outro.
+// "sabe" vira "Saiba" faz sentido no C7182, onde é o nome do botão, e quebra
+// "Sabe o que acontece?" em qualquer peça que faça a pergunta.
+const CORRECOES = cfgLegenda.correcoes
+  ? cfgLegenda.correcoes.map(([de, para]) => [new RegExp(`^${de}$`, 'i'), para])
+  : [
+    [/^sabe$/i, 'Saiba'],
+    [/^saiba$/i, 'Saiba'],
+    [/^antigolpe$/i, 'Antigolpe'],
+    [/^metta$/i, 'Metta'],
+    [/^mentoria$/i, 'Mentoria']
+  ];
 
-// Sequências inteiras que precisam ser reescritas, não só palavra a palavra
-const FRASES_CORRIGIDAS = [
-  // as aspas saem: o whisper cita o nome do botão, na legenda elas só sujam
-  [/clique em ["“]?sabe a mais["”]?/i, 'clique em Saiba mais'],
-  [/clique em ["“]saiba mais["”]/i, 'clique em Saiba mais'],
-  [/clique e saiba mais/i, 'clique em Saiba mais']
-];
+// Janelas de tempo da base onde a transcrição inventou palavra. Ver o filtro
+// no fim de tokensParaPalavras.
+const REMOVER = cfgLegenda.remover || [];
+
+// Sequências inteiras que precisam ser reescritas, não só palavra a palavra.
+// Como as correções de palavra, as do vídeo substituem as padrão.
+const FRASES_CORRIGIDAS = cfgLegenda.frases
+  ? cfgLegenda.frases.map(([de, para]) => [new RegExp(de, 'i'), para])
+  : [
+    // as aspas saem: o whisper cita o nome do botão, na legenda elas só sujam
+    [/clique em ["“]?sabe a mais["”]?/i, 'clique em Saiba mais'],
+    [/clique em ["“]saiba mais["”]/i, 'clique em Saiba mais'],
+    [/clique e saiba mais/i, 'clique em Saiba mais']
+  ];
 
 /**
  * Junta tokens do whisper em palavras. Token iniciado por espaço abre palavra nova.
  */
 function tokensParaPalavras(tokens) {
-  const palavras = [];
+  let palavras = [];
   tokens.forEach(t => {
     const bruto = t.text;
     if (!bruto || !bruto.trim()) return;
@@ -82,6 +110,12 @@ function tokensParaPalavras(tokens) {
       p.fim = t.offsets.to / 1000;
     }
   });
+
+  // Aspas fora antes de qualquer correção. O whisper põe aspas na fala citada, e
+  // uma palavra que começa com aspa não casa nem com padrão de frase nem com
+  // correção de palavra: o núcleo separado da pontuação sai vazio. Medido no
+  // Dia dos Pais, onde "Caí, e "Felio, ficaram sem correção possível.
+  palavras.forEach(p => { p.texto = p.texto.replace(/["“”]/g, ''); });
 
   // Correção de frase: reescreve a sequência mantendo os tempos das palavras
   const linha = palavras.map(p => p.texto).join(' ');
@@ -116,6 +150,49 @@ function tokensParaPalavras(tokens) {
   // elas só sujam. Feito aqui e não por regex de frase porque a pontuação
   // final gruda na última palavra e quebra o casamento.
   palavras.forEach(p => { p.texto = p.texto.replace(/["“”]/g, ''); });
+
+  // Janelas de alucinação. Na emenda de dois planos o whisper às vezes completa
+  // a frase com o que seria natural dizer e carimba o tempo em cima do silêncio:
+  // no C7185 ele escreveu "sabe por quê?" sobre 0,2s de pausa medida a -68 dB.
+  // Some do áudio não some da transcrição, então a janela é declarada à mão, em
+  // tempo da base, depois de conferir que ali não há fala.
+  if (REMOVER.length) {
+    const antes = palavras.length;
+    palavras = palavras.filter(p => !REMOVER.some(r => p.ini >= r.de && p.fim <= r.ate));
+    const fora = antes - palavras.length;
+    if (fora) console.log(`[legenda] ${fora} palavra(s) removida(s) por janela declarada`);
+  }
+
+  // Cauda amassada. Quando a fala vai ate o ultimo quadro, o whisper as vezes
+  // carimba as palavras finais todas no mesmo instante, com duracao zero, e
+  // ainda joga a pontuacao para depois do fim do arquivo. No depoimento-02 as
+  // quatro palavras de 'o anuncio forte.' sairam todas em 35,41s numa base de
+  // 35,42s: o bloco comecava depois do fim e a ultima frase ficava sem legenda.
+  // Diferente de §3.6, aqui a fala existe - o que falta e o tempo dela. Entao
+  // as palavras sao reespalhadas entre a ultima com tempo bom e o fim do video.
+  const zeradas = palavras.filter(p => p.fim - p.ini < 0.001).length;
+  if (zeradas && DURACAO) {
+    let i = 0;
+    while (i < palavras.length) {
+      if (palavras[i].fim - palavras[i].ini >= 0.001) { i++; continue; }
+      let j = i;
+      while (j < palavras.length && palavras[j].fim - palavras[j].ini < 0.001) j++;
+      const de = i > 0 ? palavras[i - 1].fim : 0;
+      const ate = j < palavras.length ? palavras[j].ini : DURACAO;
+      const passo = (ate - de) / (j - i);
+      if (passo > 0) {
+        for (let k = i; k < j; k++) {
+          palavras[k].ini = +(de + passo * (k - i)).toFixed(3);
+          palavras[k].fim = +(de + passo * (k - i + 1)).toFixed(3);
+        }
+      }
+      i = j;
+    }
+    console.log(`[legenda] ${zeradas} palavra(s) sem duracao reespalhadas ate ${DURACAO.toFixed(2)}s`);
+  }
+
+  // Nada pode passar do ultimo quadro: legenda depois do fim nao aparece.
+  if (DURACAO) palavras.forEach(p => { p.ini = Math.min(p.ini, DURACAO); p.fim = Math.min(p.fim, DURACAO); });
 
   return palavras;
 }

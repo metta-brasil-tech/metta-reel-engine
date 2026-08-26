@@ -1,0 +1,63 @@
+{
+  "fonte": "C:/Users/Usuario/Documents/Claude/Projects/Branding Metta 2.0/video/work/criativos/improvisado/source/bruto-vertical.mp4",
+  "bruto": {
+    "duracao": 71.08,
+    "resolucao": "2160x3840",
+    "fps": 29.97,
+    "rotacao": 0
+  },
+  "offset_transcricao": 3.53,
+  "marca": "Metta",
+  "formato": "Reels 1080x1920",
+  "motivo_cabeca": "cabeça: claquete e direção fora do lapela",
+  "descartes": [
+    {
+      "de": 51.3,
+      "ate": 59.05,
+      "motivo": "\"Portanto, quer de fato ter uma empresa que bate meta sem depender de voce, tenha um gestor e um processo comercial\" so reenuncia os dois passos que acabaram de ser explicados. Sao 7,6s de repeticao, e sem eles a peca cai de 61s para dentro da faixa de anuncio. O CTA em 59.09 nao e tocado."
+    }
+  ],
+  "papeis": [
+    {
+      "chave": "os gurus falam",
+      "papel": "gancho"
+    },
+    {
+      "chave": "isso é porque todo empresário",
+      "papel": "contraponto"
+    },
+    {
+      "chave": "a grande verdade",
+      "papel": "tese"
+    },
+    {
+      "chave": "até lá, tem duas coisas",
+      "papel": "estrutura"
+    },
+    {
+      "chave": "uma, é você conseguir",
+      "papel": "passo"
+    },
+    {
+      "chave": "porque, afinal",
+      "papel": "prova"
+    },
+    {
+      "chave": "o segundo passo",
+      "papel": "passo"
+    },
+    {
+      "chave": "portanto, quer de fato",
+      "papel": "fecho"
+    },
+    {
+      "chave": "quer a nossa ajuda",
+      "papel": "cta"
+    },
+    {
+      "chave": "clique e seba",
+      "papel": "cta"
+    }
+  ],
+  "_normalizacao": "bruto gravado em 16:9. Recorte 9:16 centrado em 57% da largura, onde esta o rosto, escalado para 2160x3840 antes do pipeline."
+}
